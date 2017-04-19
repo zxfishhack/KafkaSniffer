@@ -1,0 +1,111 @@
+﻿<Window x:Class="KafkaSniffer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:KafkaSniffer"
+        mc:Ignorable="d"
+        Title="KafkaSniffer" Height="600" Width="800" MinHeight="540" MinWidth="720">
+    <Window.DataContext>
+        <local:Vm x:Name="Vm"/>
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="240" />
+        </Grid.RowDefinitions>
+        <GroupBox Grid.Row="0">
+            <GroupBox.Header>
+                <CheckBox IsEnabled="False" IsChecked="{Binding BrokerInfo.Connected, Mode=OneWay}">BrokerInfo</CheckBox>
+            </GroupBox.Header>
+            <Grid VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="IP"/>
+                <TextBox Grid.Column="1" Text="{Binding BrokerInfo.Ip}" />
+                <Label Grid.Column="2" Content="Port" />
+                <TextBox Grid.Column="3" Text="{Binding BrokerInfo.Port}" />
+                <Button Grid.Column="4" Click="Connect">Connect</Button>
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="1" Header="Consumer List">
+            <TabControl ItemsSource="{Binding ConsumerList, Mode=OneWay}" x:Name="ConsumerList">
+                <TabControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Topic, Mode=OneWay}" ToolTip="{Binding Topic, Mode=OneWay}" MaxWidth="80"/>
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
+                <TabControl.ContentTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0" HorizontalAlignment="Left">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0">Topic</Label>
+                                <TextBox Text="{Binding Path=Topic, Mode=TwoWay}" Grid.Column="1" IsEnabled="{Binding Path=NotSubscribe, Mode=OneWay}" />
+                                <Label Grid.Column="2">Group ID</Label>
+                                <TextBox Text="{Binding Path=GroupId}" Grid.Column="3" IsEnabled="{Binding Path=NotSubscribe, Mode=OneWay}" />
+                                <Button Grid.Column="4" IsEnabled="{Binding Path=NotSubscribe, Mode=OneWay}">Subscribe</Button>
+                                <Button Grid.Column="5">Clear</Button>
+                            </Grid>
+                            <TextBox Style="{DynamicResource MultiLine}" Grid.Row="1" Margin="10" IsReadOnly="True" Text="{Binding Path=MessageLog, Mode=OneWay}"/>
+                        </Grid>
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+            </TabControl>
+        </GroupBox>
+        <GroupBox Grid.Row="2" Header="Producer List">
+            <TabControl ItemsSource="{Binding ProducerList, Mode=OneWay}" x:Name="ProducerList">
+                <TabControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Topic}" ToolTip="{Binding Topic}" MaxWidth="80"/>
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
+                <TabControl.ContentTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0" HorizontalAlignment="Left">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0">Topic</Label>
+                                <TextBox Text="{Binding Path=Topic}" Grid.Column="1" />
+                                <Label Grid.Column="2">Key</Label>
+                                <TextBox Text="{Binding Path=Key}" Grid.Column="3" />
+                                <Button Grid.Column="4">Send</Button>
+                            </Grid>
+                            <TextBox Style="{DynamicResource MultiLine}" Grid.Row="1" Margin="10" Text="{Binding Path=Message}"/>
+                        </Grid>
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+            </TabControl>
+        </GroupBox>
+    </Grid>
+</Window>

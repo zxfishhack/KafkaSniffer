@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace KafkaSniffer
 {
@@ -12,8 +7,8 @@ namespace KafkaSniffer
     {
         public static BrokerInfo Instance = new Lazy<BrokerInfo>(() => new BrokerInfo()).Value;
 
-        private string _ip = BrokerInfo.Instance == null ? "" : BrokerInfo.Instance.Ip;
-        private int _port = BrokerInfo.Instance == null ? 9092 : BrokerInfo.Instance.Port;
+        private string _ip = Instance?.Ip ?? "";
+        private int _port = Instance?.Port ?? 9092;
 
         public string Ip
         {
@@ -39,7 +34,7 @@ namespace KafkaSniffer
             }
         }
 
-        public bool Setted { get; private set; } = false;
+        public bool Setted { get; private set; }
 
         public bool NotSetted => !Setted;
 

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KafkaSniffer"
         mc:Ignorable="d"
-        Title="KafkaSniffer" Height="600" Width="800" MinHeight="540" MinWidth="720">
+        Title="KafkaSniffer" Height="600" Width="800" MinHeight="540" MinWidth="800" Loaded="WindowLoaded">
     <Window.DataContext>
         <local:Vm x:Name="Vm"/>
     </Window.DataContext>
@@ -15,10 +15,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="240" />
         </Grid.RowDefinitions>
-        <GroupBox Grid.Row="0">
-            <GroupBox.Header>
-                <CheckBox IsEnabled="False" IsChecked="{Binding BrokerInfo.Connected, Mode=OneWay}">BrokerInfo</CheckBox>
-            </GroupBox.Header>
+        <GroupBox Grid.Row="0" Header="Default Broker">
             <Grid VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -29,17 +26,17 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0" Content="IP"/>
-                <TextBox Grid.Column="1" Text="{Binding BrokerInfo.Ip}" />
+                <TextBox Grid.Column="1" Text="{Binding BrokerInfo.Ip}" IsEnabled="{Binding BrokerInfo.NotSetted}" />
                 <Label Grid.Column="2" Content="Port" />
-                <TextBox Grid.Column="3" Text="{Binding BrokerInfo.Port}" />
-                <Button Grid.Column="4" Click="Connect">Connect</Button>
+                <TextBox Grid.Column="3" Text="{Binding BrokerInfo.Port}" IsEnabled="{Binding BrokerInfo.NotSetted}" />
+                <Button Grid.Column="4" Click="SetDefault" IsEnabled="{Binding BrokerInfo.NotSetted}">Set Default</Button>
             </Grid>
         </GroupBox>
         <GroupBox Grid.Row="1" Header="Consumer List">
-            <TabControl ItemsSource="{Binding ConsumerList, Mode=OneWay}" x:Name="ConsumerList">
+            <TabControl ItemsSource="{Binding ConsumerList, Mode=OneWay}" Name="ConsumerList">
                 <TabControl.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Topic, Mode=OneWay}" ToolTip="{Binding Topic, Mode=OneWay}" MaxWidth="80"/>
+                        <TextBlock Text="{Binding Topic, Mode=OneWay}" ToolTip="{Binding Topic, Mode=OneWay}" MinWidth="40" MaxWidth="120"/>
                     </DataTemplate>
                 </TabControl.ItemTemplate>
                 <TabControl.ContentTemplate>
@@ -49,23 +46,18 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <Grid Grid.Row="0" HorizontalAlignment="Left">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Label Grid.Column="0">Topic</Label>
-                                <TextBox Text="{Binding Path=Topic, Mode=TwoWay}" Grid.Column="1" IsEnabled="{Binding Path=NotSubscribe, Mode=OneWay}" />
-                                <Label Grid.Column="2">Group ID</Label>
-                                <TextBox Text="{Binding Path=GroupId}" Grid.Column="3" IsEnabled="{Binding Path=NotSubscribe, Mode=OneWay}" />
-                                <Button Grid.Column="4" IsEnabled="{Binding Path=NotSubscribe, Mode=OneWay}">Subscribe</Button>
-                                <Button Grid.Column="5">Clear</Button>
-                            </Grid>
+                            <StackPanel Orientation="Horizontal" Grid.Row="0">
+                                <Label>IP</Label>
+                                <TextBox Width="80" Text="{Binding Path=Ip}" IsEnabled="{Binding Path=NotSubscribe}" />
+                                <Label>Port</Label>
+                                <TextBox Width="80" Text="{Binding Path=Port}" IsEnabled="{Binding Path=NotSubscribe}" />
+                                <Label>Topic</Label>
+                                <TextBox Text="{Binding Path=Topic, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Path=NotSubscribe}" />
+                                <Label>Group ID</Label>
+                                <TextBox Text="{Binding Path=GroupId}" IsEnabled="{Binding Path=NotSubscribe}" />
+                                <Button Click="Subscribe" IsEnabled="{Binding Path=NotSubscribe}">Subscribe</Button>
+                                <Button Click="ClearMessageLog">Clear</Button>
+                            </StackPanel>
                             <TextBox Style="{DynamicResource MultiLine}" Grid.Row="1" Margin="10" IsReadOnly="True" Text="{Binding Path=MessageLog, Mode=OneWay}"/>
                         </Grid>
                     </DataTemplate>
@@ -86,21 +78,17 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <Grid Grid.Row="0" HorizontalAlignment="Left">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Label Grid.Column="0">Topic</Label>
-                                <TextBox Text="{Binding Path=Topic}" Grid.Column="1" />
-                                <Label Grid.Column="2">Key</Label>
-                                <TextBox Text="{Binding Path=Key}" Grid.Column="3" />
-                                <Button Grid.Column="4">Send</Button>
-                            </Grid>
+                            <StackPanel Orientation="Horizontal" Grid.Row="0">
+                                <Label>IP</Label>
+                                <TextBox Width="80" Text="{Binding Path=Ip}" IsEnabled="{Binding Path=NotInit}" />
+                                <Label>Port</Label>
+                                <TextBox Width="60" Text="{Binding Path=Port}" IsEnabled="{Binding Path=NotInit}" />
+                                <Label>Topic</Label>
+                                <TextBox Text="{Binding Path=Topic, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Path=NotInit}" />
+                                <Label>Key</Label>
+                                <TextBox Text="{Binding Path=Key}" />
+                                <Button Click="ProduceMessage">Send</Button>
+                            </StackPanel>
                             <TextBox Style="{DynamicResource MultiLine}" Grid.Row="1" Margin="10" Text="{Binding Path=Message}"/>
                         </Grid>
                     </DataTemplate>

@@ -1,17 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace KafkaSniffer
 {
@@ -23,20 +11,45 @@ namespace KafkaSniffer
         public MainWindow()
         {
             InitializeComponent();
-            Button obj = (Button)ConsumerList.Template.FindName("AddButton", ConsumerList);
-            Vm.ConsumerList.Add(new Consumer());
-            Vm.ConsumerList.Add(new Consumer());
-            Vm.ConsumerList.Add(new Consumer());
-            Vm.ConsumerList.Add(new Consumer());
+        }
 
-            Vm.ProducerList.Add(new Producer());
-            Vm.ProducerList.Add(new Producer());
+        private void SetDefault(object sender, RoutedEventArgs e)
+        {
+            Vm.BrokerInfo.SetDefault();
+        }
+
+        private void WindowLoaded(object sender, RoutedEventArgs e)
+        {
+            Button addButton = null;
+            addButton = (Button)ConsumerList.Template.FindName("AddButton", ConsumerList);
+            addButton.Click += AddConsumer;
+            addButton = (Button)ProducerList.Template.FindName("AddButton", ProducerList);
+            addButton.Click += AddProducer;
+        }
+
+        private void AddProducer(object sender, RoutedEventArgs e)
+        {
             Vm.ProducerList.Add(new Producer());
         }
 
-        private void Connect(object sender, RoutedEventArgs e)
+        private void AddConsumer(object sender, RoutedEventArgs e)
         {
             Vm.ConsumerList.Add(new Consumer());
+        }
+
+        private void ClearMessageLog(object sender, RoutedEventArgs e)
+        {
+            Vm.ConsumerList[ConsumerList.SelectedIndex].ClearMessageLog();
+        }
+
+        private void Subscribe(object sender, RoutedEventArgs e)
+        {
+            Vm.ConsumerList[ConsumerList.SelectedIndex].SubScribe();
+        }
+
+        private void ProduceMessage(object sender, RoutedEventArgs e)
+        {
+            Vm.ProducerList[ProducerList.SelectedIndex].ProduceMessage();
         }
     }
 }

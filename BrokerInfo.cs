@@ -12,17 +12,48 @@ namespace KafkaSniffer
     {
         public static BrokerInfo Instance = new Lazy<BrokerInfo>(() => new BrokerInfo()).Value;
 
-        public string Ip { get; set; } = "127.0.0.1";
+        private string _ip = BrokerInfo.Instance == null ? "" : BrokerInfo.Instance.Ip;
+        private int _port = BrokerInfo.Instance == null ? 9092 : BrokerInfo.Instance.Port;
 
-        public int Port { get; set; } = 9092;
+        public string Ip
+        {
+            get { return _ip; }
+            set
+            {
+                _ip = value;
+                OnPropertyChanged("Ip");
+            } 
+        }
 
-        public bool Connected { get; set; } = false;
+        public int Port
+        {
+            get
+            {
+                return _port;
+                
+            }
+            set
+            {
+                _port = value;
+                OnPropertyChanged("Port");
+            }
+        }
+
+        public bool Setted { get; private set; } = false;
+
+        public bool NotSetted => !Setted;
+
+        public void SetDefault()
+        {
+            Setted = true;
+            OnPropertyChanged("Setted");
+            OnPropertyChanged("NotSetted");
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        public void OnPropertyChanged(string name)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 }

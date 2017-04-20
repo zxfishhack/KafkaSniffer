@@ -13,5 +13,9 @@ namespace KafkaSniffer
     /// </summary>
     public partial class App : Application
     {
+        private void Connect(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

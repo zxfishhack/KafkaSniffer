@@ -3,12 +3,82 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace KafkaSniffer
 {
-    class Producer
+    class Producer : BrokerInfo
     {
-        public string Topic { get; set; } = "Test Topic";
-        public string Key { get; set; } = "Test Key";
+        private string _topic = "", _key = "";
+        private bool _notInit = true;
+        private Confluent.Kafka.Producer _producer;
+
+        public string Topic
+        {
+            get { return _topic; }
+            set
+            {
+                _topic = value;
+                OnPropertyChanged("Topic");
+            }
+        }
+
+        public string Key
+        {
+            get { return _key; }
+            set
+            {
+                _key = value;
+                OnPropertyChanged("Key");
+            }
+        }
+
+        public string Message { get; set; } = "";
+
+        public bool NotInit
+        {
+            get { return _notInit; }
+            set
+            {
+                _notInit = value;
+                OnPropertyChanged("NotInit");
+            }
+        }
+
+        public Producer()
+        {
+            Ip = BrokerInfo.Instance.Ip;
+            Port = BrokerInfo.Instance.Port;
+        }
+
+        private void Init()
+        {
+            if (!NotInit)
+            {
+                return;
+            }
+            var brokerList = Ip + ":" + Port;
+            var config = new Dictionary<string, object>
+            {
+                { "bootstrap.servers", brokerList }
+            };
+            _producer = new Confluent.Kafka.Producer(config);
+            NotInit = false;
+        }
+
+        public void ProduceMessage()
+        {
+            Init();
+
+            _producer.ProduceAsync(_topic
+                , Encoding.UTF8.GetBytes(_key)
+                , Encoding.UTF8.GetBytes(Message)
+            ).ContinueWith(task =>
+            {
+                string result = task.Result.Error ? "fail" : "succ";
+                MessageBox.Show($"Send message to [{task.Result.Topic}] {result}");
+            });
+
+        }
     }
 }

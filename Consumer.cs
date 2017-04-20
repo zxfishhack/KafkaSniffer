@@ -94,7 +94,7 @@ namespace KafkaSniffer
         {
             DateTime now = DateTime.Now;
             MessageLog +=
-                $"{now:yyyy-mm-dd HH:mm:ss} [{e.Offset}]\n{Encoding.UTF8.GetString(e.Key)}\n{Encoding.UTF8.GetString(e.Value)}\n\n";
+                $"{now:yyyy-MM-dd HH:mm:ss} [{e.Offset}]\n{Encoding.UTF8.GetString(e.Key)}\n{Encoding.UTF8.GetString(e.Value)}\n\n";
         }
     }
 }

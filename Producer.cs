@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Confluent.Kafka;
 
 namespace KafkaSniffer
 {
@@ -70,15 +71,18 @@ namespace KafkaSniffer
         {
             Init();
 
-            _producer.ProduceAsync(_topic
+            Message result = _producer.ProduceAsync(_topic
                 , Encoding.UTF8.GetBytes(_key)
                 , Encoding.UTF8.GetBytes(Message)
-            ).ContinueWith(task =>
+            ).Result;
+            if (result.Error)
             {
-                string result = task.Result.Error ? "fail" : "succ";
-                MessageBox.Show($"Send message to [{task.Result.Topic}] {result}");
-            });
-
+                MessageBox.Show($"Send message to [{_topic}] fail. Error:[{result.Error.Reason}]");
+            }
+            else
+            {
+                MessageBox.Show($"Send message to [{_topic}] succ.");
+            }
         }
     }
 }

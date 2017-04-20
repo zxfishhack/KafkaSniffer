@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace KafkaSniffer
 {
     internal class Vm
     {
         public BrokerInfo BrokerInfo { get; } = BrokerInfo.Instance;
-        public List<Consumer> ConsumerList { get; } = new List<Consumer>();
-        public List<Producer> ProducerList { get; } = new List<Producer>();
+        public ObservableCollection<Consumer> ConsumerList { get; } = new ObservableCollection<Consumer>();
+        public ObservableCollection<Producer> ProducerList { get; } = new ObservableCollection<Producer>();
     }
 }

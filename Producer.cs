@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using System.Windows;
-using kafka4net;
+using Confluent.Kafka;
+using Confluent.Kafka.Serialization;
 
 namespace KafkaSniffer
 {
@@ -9,7 +10,7 @@ namespace KafkaSniffer
     {
         private string _topic = "", _key = "";
         private bool _notInit = true;
-        private kafka4net.Producer _producer;
+        private Confluent.Kafka.Producer<string, string> _producer;
 
         public string Topic
         {
@@ -43,7 +44,7 @@ namespace KafkaSniffer
             }
         }
 
-        private async void Init()
+        private void Init()
         {
             if (!NotInit)
             {
@@ -54,26 +55,22 @@ namespace KafkaSniffer
             {
                 { "bootstrap.servers", brokerList }
             };
-            try
-            {
-                _producer = new kafka4net.Producer(brokerList, new ProducerConfiguration(_topic));
-                await _producer.ConnectAsync();
-                NotInit = false;
-            }
-            catch
-            {
-                // ignored
-            }
+            _producer = new Confluent.Kafka.Producer<string, string>(config
+                , new StringSerializer(Encoding.UTF8), new StringSerializer(Encoding.UTF8));
+            NotInit = false;
         }
 
-        public void ProduceMessage()
+        public async void ProduceMessage()
         {
             Init();
-            _producer.Send(new Message
-            {
-                Key = Encoding.UTF8.GetBytes(_key),
-                Value = Encoding.UTF8.GetBytes(Message)
-            });
+
+            var result = await _producer.ProduceAsync(_topic
+                , _key
+                , Message
+            );
+            MessageBox.Show(result.Error
+                ? $"Send message to [{_topic}] fail. Error:[{result.Error.Reason}]"
+                : $"Send message to [{_topic}] succ.");
         }
     }
 }

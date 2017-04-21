@@ -68,7 +68,7 @@
             <TabControl ItemsSource="{Binding ProducerList, Mode=OneWay}" x:Name="ProducerList">
                 <TabControl.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Topic}" ToolTip="{Binding Topic}" MaxWidth="80"/>
+                        <TextBlock Text="{Binding Topic}" ToolTip="{Binding Topic}" MinWidth="40" MaxWidth="120"/>
                     </DataTemplate>
                 </TabControl.ItemTemplate>
                 <TabControl.ContentTemplate>

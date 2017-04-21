@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using Confluent.Kafka;
+using kafka4net;
+using kafka4net.ConsumerImpl;
 
 namespace KafkaSniffer
 {
     class Consumer : BrokerInfo
     {
         private string _messageLog = "";
-        private List<string> _messageLogs = new List<string>();
+        private readonly List<string> _messageLogs = new List<string>();
         private string _topic = "", _groupId = "";
         private bool _notSubscribe = true;
-        private Confluent.Kafka.Consumer _consumer;
-        private bool _exitFlag = false;
+        private kafka4net.Consumer _consumer;
 
         public string Topic
         {
@@ -65,7 +63,7 @@ namespace KafkaSniffer
             MessageLog = "";
         }
 
-        public void SubScribe()
+        public async void SubScribe()
         {
             string brokerList = Ip + ":" + Port;
             var config = new Dictionary<string, object>
@@ -73,26 +71,16 @@ namespace KafkaSniffer
                 {"group.id", _groupId },
                 {"bootstrap.servers", brokerList }
             };
-            _consumer = new Confluent.Kafka.Consumer(config);
-            _consumer.Subscribe(_topic);
-            _consumer.OnMessage += OnMessage;
-            _consumer.OnError += OnError;
-            Task.Run(() =>
+            _consumer = new kafka4net.Consumer(new ConsumerConfiguration(brokerList, _topic, new StartPositionTopicEnd()));
+            _consumer.OnMessageArrived.Subscribe(msg =>
             {
-                while (!_exitFlag)
-                {
-                    _consumer.Poll(100);
-                }
+                OnMessage(this, msg);
             });
+            await _consumer.IsConnected;
             NotSubscribe = false;
         }
 
-        private void OnError(object sender, Error e)
-        {
-            MessageBox.Show(e.Reason);
-        }
-
-        private void OnMessage(object sender, Message e)
+        private void OnMessage(object sender, ReceivedMessage e)
         {
             DateTime now = DateTime.Now;
             _messageLogs.Add($"{now:yyyy-MM-dd HH:mm:ss} [{e.Offset}]\n{Encoding.UTF8.GetString(e.Key)}\n{Encoding.UTF8.GetString(e.Value)}\n\n");

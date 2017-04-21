@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using System.Windows;
-using Confluent.Kafka;
+using kafka4net;
 
 namespace KafkaSniffer
 {
@@ -9,7 +9,7 @@ namespace KafkaSniffer
     {
         private string _topic = "", _key = "";
         private bool _notInit = true;
-        private Confluent.Kafka.Producer _producer;
+        private kafka4net.Producer _producer;
 
         public string Topic
         {
@@ -43,7 +43,7 @@ namespace KafkaSniffer
             }
         }
 
-        private void Init()
+        private async void Init()
         {
             if (!NotInit)
             {
@@ -54,22 +54,25 @@ namespace KafkaSniffer
             {
                 { "bootstrap.servers", brokerList }
             };
-            _producer = new Confluent.Kafka.Producer(config);
-            NotInit = false;
+            try
+            {
+                _producer = new kafka4net.Producer(brokerList, new ProducerConfiguration(_topic));
+                await _producer.ConnectAsync();
+                NotInit = false;
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         public void ProduceMessage()
         {
             Init();
-
-            _producer.ProduceAsync(_topic
-                , Encoding.UTF8.GetBytes(_key)
-                , Encoding.UTF8.GetBytes(Message)
-            ).ContinueWith(task =>
+            _producer.Send(new Message
             {
-                MessageBox.Show(task.Result.Error
-                ? $"Send message to [{_topic}] fail. Error:[{task.Result.Error.Reason}]"
-                : $"Send message to [{_topic}] succ.");
+                Key = Encoding.UTF8.GetBytes(_key),
+                Value = Encoding.UTF8.GetBytes(Message)
             });
         }
     }

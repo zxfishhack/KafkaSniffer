@@ -10,6 +10,7 @@ namespace KafkaSniffer
     class Consumer : BrokerInfo
     {
         private string _messageLog = "";
+        private List<string> _messageLogs = new List<string>();
         private string _topic = "", _groupId = "";
         private bool _notSubscribe = true;
         private Confluent.Kafka.Consumer _consumer;
@@ -93,8 +94,17 @@ namespace KafkaSniffer
         private void OnMessage(object sender, Message e)
         {
             DateTime now = DateTime.Now;
-            MessageLog +=
-                $"{now:yyyy-MM-dd HH:mm:ss} [{e.Offset}]\n{Encoding.UTF8.GetString(e.Key)}\n{Encoding.UTF8.GetString(e.Value)}\n\n";
+            _messageLogs.Add($"{now:yyyy-MM-dd HH:mm:ss} [{e.Offset}]\n{Encoding.UTF8.GetString(e.Key)}\n{Encoding.UTF8.GetString(e.Value)}\n\n");
+            if (_messageLogs.Count > 20)
+            {
+                _messageLogs.RemoveAt(0);
+            }
+            _messageLog = "";
+            _messageLogs.ForEach(log =>
+            {
+                _messageLog += log;
+            });
+            OnPropertyChanged("MessageLog");
         }
     }
 }

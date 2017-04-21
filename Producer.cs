@@ -62,13 +62,15 @@ namespace KafkaSniffer
         {
             Init();
 
-            Message result = _producer.ProduceAsync(_topic
+            _producer.ProduceAsync(_topic
                 , Encoding.UTF8.GetBytes(_key)
                 , Encoding.UTF8.GetBytes(Message)
-            ).Result;
-            MessageBox.Show(result.Error
-                ? $"Send message to [{_topic}] fail. Error:[{result.Error.Reason}]"
+            ).ContinueWith(task =>
+            {
+                MessageBox.Show(task.Result.Error
+                ? $"Send message to [{_topic}] fail. Error:[{task.Result.Error.Reason}]"
                 : $"Send message to [{_topic}] succ.");
+            });
         }
     }
 }

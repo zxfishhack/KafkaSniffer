@@ -61,6 +61,7 @@ namespace KafkaSniffer
 
         public void ClearMessageLog()
         {
+            _messageLogs.Clear();
             MessageLog = "";
         }
 

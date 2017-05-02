@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Confluent.Kafka;
@@ -14,6 +15,7 @@ namespace KafkaSniffer
         private readonly List<string> _messageLogs = new List<string>();
         private string _topic = "", _groupId = "";
         private bool _notSubscribe = true;
+        private StreamWriter _logFile = null;
 
         public string Topic
         {
@@ -58,6 +60,8 @@ namespace KafkaSniffer
             }
         }
 
+        public bool IsLogToFile { get; set; } = false;
+
         public void ClearMessageLog()
         {
             _messageLogs.Clear();
@@ -90,8 +94,10 @@ namespace KafkaSniffer
 
         private void OnMessage(object sender, Message<string, string> e)
         {
-            DateTime now = DateTime.Now;
-            _messageLogs.Add($"{now:yyyy-MM-dd HH:mm:ss} Offset:[{e.Offset}] Length:[{e.Value.Length}]\n{e.Key}\n{e.Value}\n\n");
+            var now = DateTime.Now;
+            var msg = $"{now:yyyy-MM-dd HH:mm:ss} Offset:[{e.Offset}] Length:[{e.Value.Length}]\n{e.Key}\n{e.Value}\n\n";
+            _messageLogs.Add(msg);
+            _logFile?.Write(msg);
             if (_messageLogs.Count > 20)
             {
                 _messageLogs.RemoveAt(0);
@@ -102,6 +108,17 @@ namespace KafkaSniffer
                 _messageLog += log;
             });
             OnPropertyChanged("MessageLog");
+        }
+
+        public void EndLogToFile()
+        {
+            _logFile.Close();
+            _logFile = null;
+        }
+
+        public void StartLogToFile(Stream fs)
+        {
+            _logFile = new StreamWriter(fs);
         }
     }
 }

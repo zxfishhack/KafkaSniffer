@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Win32;
 
 namespace KafkaSniffer
 {
@@ -50,6 +51,27 @@ namespace KafkaSniffer
         private void ProduceMessage(object sender, RoutedEventArgs e)
         {
             Vm.ProducerList[ProducerList.SelectedIndex].ProduceMessage();
+        }
+
+        private void LogFile(object sender, RoutedEventArgs e)
+        {
+            var consumer = Vm.ConsumerList[ConsumerList.SelectedIndex];
+            if (!consumer.IsLogToFile)
+            {
+                consumer.EndLogToFile();
+            }
+            else
+            {
+                var dlg = new SaveFileDialog
+                {
+                    Title = "Log to file ...",
+                    Filter = "Log File(*.log)|*.log|All File(*.*)|*.*"
+                };
+                if (dlg.ShowDialog() == true)
+                {
+                    consumer.StartLogToFile(dlg.OpenFile());
+                }
+            }
         }
     }
 }

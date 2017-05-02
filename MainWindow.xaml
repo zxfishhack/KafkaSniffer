@@ -45,6 +45,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <StackPanel Orientation="Horizontal" Grid.Row="0">
                                 <Label>IP</Label>
@@ -59,6 +60,7 @@
                                 <Button Click="ClearMessageLog">Clear</Button>
                             </StackPanel>
                             <TextBox Style="{DynamicResource MultiLine}" Grid.Row="1" Margin="10" IsReadOnly="True" Text="{Binding Path=MessageLog, Mode=OneWay}"/>
+                            <CheckBox IsChecked="{Binding Path=IsLogToFile}" Grid.Row="2" HorizontalAlignment="Right" Click="LogFile">Log to file</CheckBox>
                         </Grid>
                     </DataTemplate>
                 </TabControl.ContentTemplate>

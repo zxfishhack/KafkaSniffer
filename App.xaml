@@ -13,7 +13,7 @@
             <Setter Property="Width" Value="120"/>
         </Style>
         <Style TargetType="{x:Type TextBox}" x:Key="MultiLine">
-            <Setter Property="TextWrapping" Value="WrapWithOverflow"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="AcceptsReturn" Value="True"/>
             <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
             <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>

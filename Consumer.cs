@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
 using Confluent.Kafka;
@@ -13,7 +14,6 @@ namespace KafkaSniffer
         private readonly List<string> _messageLogs = new List<string>();
         private string _topic = "", _groupId = "";
         private bool _notSubscribe = true;
-        private Consumer<string, string> _consumer;
 
         public string Topic
         {
@@ -66,22 +66,23 @@ namespace KafkaSniffer
 
         public void SubScribe()
         {
+            var brokerList = Ip + ":" + Port;
+            var config = new Dictionary<string, object>
+            {
+                {"group.id", _groupId },
+                {"bootstrap.servers", brokerList }
+            };
+
+            var consumer = new Consumer<string, string>(
+                config, new StringDeserializer(Encoding.UTF8), new StringDeserializer(Encoding.UTF8)
+                );
+            consumer.Subscribe(Topic);
+            consumer.OnMessage += OnMessage;
             Task.Run(() =>
             {
-                var brokerList = Ip + ":" + Port;
-                var config = new Dictionary<string, object>
-                {
-                    {"group.id", _groupId },
-                    {"bootstrap.servers", brokerList }
-                };
-                _consumer = new Consumer<string, string>(
-                    config, new StringDeserializer(Encoding.UTF8), new StringDeserializer(Encoding.UTF8)
-                    );
-                _consumer.Subscribe(Topic);
-                _consumer.OnMessage += OnMessage;
                 while (true)
                 {
-                    _consumer.Poll();
+                    consumer.Poll();
                 }
             });
             NotSubscribe = false;

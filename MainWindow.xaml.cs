@@ -21,8 +21,8 @@ namespace KafkaSniffer
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
             Button addButton = null;
-            //addButton = (Button)ConsumerList.Template.FindName("AddButton", ConsumerList);
-            //addButton.Click += AddConsumer;
+            addButton = (Button)ConsumerList.Template.FindName("AddButton", ConsumerList);
+            addButton.Click += AddConsumer;
             addButton = (Button)ProducerList.Template.FindName("AddButton", ProducerList);
             addButton.Click += AddProducer;
         }

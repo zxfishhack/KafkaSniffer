@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using Confluent.Kafka.Serialization;
@@ -15,6 +16,8 @@ namespace KafkaSniffer
         private readonly List<string> _messageLogs = new List<string>();
         private string _topic = "", _groupId = "";
         private bool _notSubscribe = true;
+        private bool _end = false;
+        private readonly AutoResetEvent _endDone = new AutoResetEvent(false);
         private StreamWriter _logFile = null;
 
         public string Topic
@@ -68,6 +71,12 @@ namespace KafkaSniffer
             MessageLog = "";
         }
 
+        public void Close()
+        {
+            _end = true;
+            _endDone.WaitOne();
+        }
+
         public void SubScribe()
         {
             var brokerList = Ip + ":" + Port;
@@ -84,10 +93,12 @@ namespace KafkaSniffer
             consumer.OnMessage += OnMessage;
             Task.Run(() =>
             {
-                while (true)
+                while (!_end)
                 {
-                    consumer.Poll();
+                    consumer.Poll(100);
                 }
+                consumer.Dispose();
+                _endDone.Set();
             });
             NotSubscribe = false;
         }

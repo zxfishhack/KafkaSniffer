@@ -58,6 +58,7 @@
                                 <TextBox Text="{Binding Path=GroupId}" IsEnabled="{Binding Path=NotSubscribe}" />
                                 <Button Click="Subscribe" IsEnabled="{Binding Path=NotSubscribe}">Subscribe</Button>
                                 <Button Click="ClearMessageLog">Clear</Button>
+                                <Button Click="CloseConsumer">Close</Button>
                             </StackPanel>
                             <TextBox Style="{DynamicResource MultiLine}" Grid.Row="1" Margin="10" IsReadOnly="True" Text="{Binding Path=MessageLog, Mode=OneWay}"/>
                             <CheckBox IsChecked="{Binding Path=IsLogToFile}" Grid.Row="2" HorizontalAlignment="Right" Click="LogFile">Log to file</CheckBox>
@@ -90,6 +91,7 @@
                                 <Label>Key</Label>
                                 <TextBox Text="{Binding Path=Key}" />
                                 <Button Click="ProduceMessage">Send</Button>
+                                <Button Click="CloseProducer">Close</Button>
                             </StackPanel>
                             <TextBox Style="{DynamicResource MultiLine}" Grid.Row="1" Margin="10" Text="{Binding Path=Message}"/>
                         </Grid>

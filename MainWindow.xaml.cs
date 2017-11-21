@@ -73,5 +73,24 @@ namespace KafkaSniffer
                 }
             }
         }
+
+        private void CloseProducer(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show("Confirm Close?", "Notice", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                Vm.ProducerList[ProducerList.SelectedIndex].Close();
+                Vm.ProducerList.RemoveAt(ProducerList.SelectedIndex);
+            }
+        }
+
+        private void CloseConsumer(object sender, RoutedEventArgs e)
+        {
+
+            if (MessageBox.Show("Confirm Close?", "Notice", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                Vm.ConsumerList[ConsumerList.SelectedIndex].Close();
+                Vm.ConsumerList.RemoveAt(ConsumerList.SelectedIndex);
+            }
+        }
     }
 }

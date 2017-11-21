@@ -60,6 +60,13 @@ namespace KafkaSniffer
             NotInit = false;
         }
 
+        public void Close()
+        {
+            _producer.Dispose();
+            _producer = null;
+            NotInit = true;
+        }
+
         public async void ProduceMessage()
         {
             Init();

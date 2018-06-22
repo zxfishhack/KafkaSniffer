@@ -62,8 +62,11 @@ namespace KafkaSniffer
 
         public void Close()
         {
-            _producer.Dispose();
-            _producer = null;
+            if (!NotInit)
+            {
+                _producer.Dispose();
+                _producer = null;
+            }
             NotInit = true;
         }
 

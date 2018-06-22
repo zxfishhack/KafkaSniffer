@@ -74,7 +74,10 @@ namespace KafkaSniffer
         public void Close()
         {
             _end = true;
-            _endDone.WaitOne();
+            if (!NotSubscribe)
+            {
+                _endDone.WaitOne();
+            }
         }
 
         public void SubScribe()
@@ -123,8 +126,11 @@ namespace KafkaSniffer
 
         public void EndLogToFile()
         {
-            _logFile.Close();
-            _logFile = null;
+            if (_logFile != null)
+            {
+                _logFile.Close();
+                _logFile = null;
+            }
         }
 
         public void StartLogToFile(Stream fs)

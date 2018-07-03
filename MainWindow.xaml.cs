@@ -71,7 +71,12 @@ namespace KafkaSniffer
                 {
                     consumer.StartLogToFile(dlg.OpenFile());
                 }
+                else
+                {
+                    consumer.IsLogToFile = false;
+                }
             }
+            consumer.OnPropertyChanged("IsLogToFile");
         }
 
         private void CloseProducer(object sender, RoutedEventArgs e)

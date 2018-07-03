@@ -50,7 +50,7 @@ namespace KafkaSniffer
             {
                 return;
             }
-            var brokerList = Ip + ":" + Port;
+            var brokerList = Endpoint;
             var config = new Dictionary<string, object>
             {
                 { "bootstrap.servers", brokerList }

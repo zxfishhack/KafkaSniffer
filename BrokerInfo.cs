@@ -7,31 +7,16 @@ namespace KafkaSniffer
     {
         public static BrokerInfo Instance = new Lazy<BrokerInfo>(() => new BrokerInfo()).Value;
 
-        private string _ip = Instance?.Ip ?? "";
-        private int _port = Instance?.Port ?? 9092;
+        private string _endpoint = Instance?.Endpoint ?? "";
 
-        public string Ip
+        public string Endpoint
         {
-            get { return _ip; }
+            get { return _endpoint; }
             set
             {
-                _ip = value;
-                OnPropertyChanged("Ip");
+                _endpoint = value;
+                OnPropertyChanged("Endpoint");
             } 
-        }
-
-        public int Port
-        {
-            get
-            {
-                return _port;
-                
-            }
-            set
-            {
-                _port = value;
-                OnPropertyChanged("Port");
-            }
         }
 
         public bool Setted { get; private set; }

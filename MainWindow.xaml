@@ -19,17 +19,12 @@
             <Grid VerticalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="120" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="240" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Content="IP"/>
-                <TextBox Grid.Column="1" Text="{Binding BrokerInfo.Ip}" IsEnabled="{Binding BrokerInfo.NotSetted}" />
-                <Label Grid.Column="2" Content="Port" />
-                <TextBox Grid.Column="3" Text="{Binding BrokerInfo.Port}" IsEnabled="{Binding BrokerInfo.NotSetted}" />
-                <Button Grid.Column="4" Click="SetDefault" IsEnabled="{Binding BrokerInfo.NotSetted}">Set Default</Button>
+                <Label Grid.Column="0" Content="Endpoint"/>
+                <TextBox Grid.Column="1" Width="240" Text="{Binding BrokerInfo.Endpoint}" IsEnabled="{Binding BrokerInfo.NotSetted}" />
             </Grid>
         </GroupBox>
         <GroupBox Grid.Row="1" Header="Consumer List">
@@ -48,10 +43,8 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <StackPanel Orientation="Horizontal" Grid.Row="0">
-                                <Label>IP</Label>
-                                <TextBox Width="80" Text="{Binding Path=Ip}" IsEnabled="{Binding Path=NotSubscribe}" />
-                                <Label>Port</Label>
-                                <TextBox Width="80" Text="{Binding Path=Port}" IsEnabled="{Binding Path=NotSubscribe}" />
+                                <Label>Endpoint</Label>
+                                <TextBox Width="160" Text="{Binding Path=Endpoint}" IsEnabled="{Binding Path=NotSubscribe}" />
                                 <Label>Topic</Label>
                                 <TextBox Text="{Binding Path=Topic, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Path=NotSubscribe}" />
                                 <Label>Group ID</Label>
@@ -82,10 +75,8 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <StackPanel Orientation="Horizontal" Grid.Row="0">
-                                <Label>IP</Label>
-                                <TextBox Width="80" Text="{Binding Path=Ip}" IsEnabled="{Binding Path=NotInit}" />
-                                <Label>Port</Label>
-                                <TextBox Width="60" Text="{Binding Path=Port}" IsEnabled="{Binding Path=NotInit}" />
+                                <Label>Endpoint</Label>
+                                <TextBox Width="160" Text="{Binding Path=Endpoint}" IsEnabled="{Binding Path=NotInit}" />
                                 <Label>Topic</Label>
                                 <TextBox Text="{Binding Path=Topic, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Path=NotInit}" />
                                 <Label>Key</Label>

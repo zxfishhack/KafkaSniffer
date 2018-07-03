@@ -82,7 +82,7 @@ namespace KafkaSniffer
 
         public void SubScribe()
         {
-            var brokerList = Ip + ":" + Port;
+            var brokerList = Endpoint;
             var config = new Dictionary<string, object>
             {
                 {"group.id", _groupId },

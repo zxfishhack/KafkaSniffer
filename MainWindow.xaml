@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KafkaSniffer"
         mc:Ignorable="d"
-        Title="KafkaSniffer" Height="600" Width="800" MinHeight="540" MinWidth="800" Loaded="WindowLoaded">
+        Title="KafkaSniffer" Height="600" Width="940" MinHeight="540" MinWidth="940" Loaded="WindowLoaded">
     <Window.DataContext>
         <local:Vm x:Name="Vm"/>
     </Window.DataContext>
@@ -39,22 +39,29 @@
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <StackPanel Orientation="Horizontal" Grid.Row="0">
                                 <Label>Endpoint</Label>
-                                <TextBox Width="160" Text="{Binding Path=Endpoint}" IsEnabled="{Binding Path=NotSubscribe}" />
+                                <TextBox Text="{Binding Path=Endpoint}" IsEnabled="{Binding Path=NotSubscribe}" />
                                 <Label>Topic</Label>
                                 <TextBox Text="{Binding Path=Topic, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Path=NotSubscribe}" />
                                 <Label>Group ID</Label>
                                 <TextBox Text="{Binding Path=GroupId}" IsEnabled="{Binding Path=NotSubscribe}" />
-                                <Button Click="Subscribe" IsEnabled="{Binding Path=NotSubscribe}">Subscribe</Button>
-                                <Button Click="ClearMessageLog">Clear</Button>
-                                <Button Click="CloseConsumer">Close</Button>
+                                <Label>Offset</Label>
+                                <TextBox Text="{Binding Path=Offset}" IsEnabled="{Binding Path=NotSubscribe}" />
+                                <Label>Count</Label>
+                                <TextBox Text="{Binding Path=Count}" IsEnabled="{Binding Path=NotSubscribe}" />
                             </StackPanel>
-                            <TextBox Style="{DynamicResource MultiLine}" Grid.Row="1" Margin="10" IsReadOnly="True" Text="{Binding Path=MessageLog, Mode=OneWay}"/>
-                            <CheckBox IsChecked="{Binding Path=IsLogToFile}" Grid.Row="2" HorizontalAlignment="Right" Click="LogFile">Log to file</CheckBox>
+                            <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,5,0,0" HorizontalAlignment="Right"  Height="25">
+                              <Button Click="Subscribe" IsEnabled="{Binding Path=NotSubscribe}">Subscribe</Button>
+                              <Button Click="ClearMessageLog">Clear</Button>
+                              <Button Click="CloseConsumer">Close</Button>
+                            </StackPanel>
+                            <TextBox Style="{DynamicResource MultiLine}" Grid.Row="2" Margin="10" IsReadOnly="True" Text="{Binding Path=MessageLog, Mode=OneWay}"/>
+                            <CheckBox IsChecked="{Binding Path=IsLogToFile}" Grid.Row="3" HorizontalAlignment="Right" Click="LogFile">Log to file</CheckBox>
                         </Grid>
                     </DataTemplate>
                 </TabControl.ContentTemplate>

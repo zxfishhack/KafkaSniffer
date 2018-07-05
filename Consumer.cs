@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -17,7 +18,10 @@ namespace KafkaSniffer
         private string _topic = "", _groupId = "";
         private bool _notSubscribe = true;
         private bool _end = false;
-        private readonly AutoResetEvent _endDone = new AutoResetEvent(false);
+        private int _offset = -1;
+        private int _count = 0;
+        private int _consumerCnt = 0;
+        private readonly ManualResetEvent _endDone = new ManualResetEvent(false);
         private StreamWriter _logFile = null;
 
         public string Topic
@@ -37,6 +41,26 @@ namespace KafkaSniffer
             {
                 _groupId = value;
                 OnPropertyChanged("GroupId");
+            }
+        }
+
+        public int Offset
+        {
+            get { return _offset; }
+            set
+            {
+                _offset = value;
+                OnPropertyChanged("Offset");
+            }
+        }
+
+        public int Count
+        {
+            get { return _count; }
+            set
+            {
+                _count = value;
+                OnPropertyChanged("Count");
             }
         }
 
@@ -73,6 +97,10 @@ namespace KafkaSniffer
 
         public void Close()
         {
+            if (_end)
+            {
+                return;
+            }
             _end = true;
             if (!NotSubscribe)
             {
@@ -82,6 +110,9 @@ namespace KafkaSniffer
 
         public void SubScribe()
         {
+            _consumerCnt = 0;
+            _end = false;
+            _endDone.Reset();
             var brokerList = Endpoint;
             var config = new Dictionary<string, object>
             {
@@ -92,7 +123,26 @@ namespace KafkaSniffer
             var consumer = new Consumer<string, string>(
                 config, new StringDeserializer(Encoding.UTF8), new StringDeserializer(Encoding.UTF8)
                 );
+            consumer.OnPartitionsAssigned += (obj, partitions) =>
+            {
+                if (_offset < 0)
+                {
+                    consumer.Assign(partitions);
+                }
+                else if (_offset == 0)
+                {
+                    var par = partitions.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.Beginning)).ToList();
+                    consumer.Assign(par);
+                }
+                else
+                {
+                    var par = partitions.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, _offset)).ToList();
+                    consumer.Assign(par);
+                }
+                _messageLogs.Add($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} partitions assigned.\n\n");
+            };
             consumer.Subscribe(Topic);
+            _messageLogs.Add($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} subscribe done.\n\n");
             consumer.OnMessage += OnMessage;
             Task.Run(() =>
             {
@@ -108,6 +158,19 @@ namespace KafkaSniffer
 
         private void OnMessage(object sender, Message<string, string> e)
         {
+            if (_count > 0)
+            {
+                if (_consumerCnt == _count)
+                {
+                    _end = true;
+                    Task.Run(() =>
+                    {
+                        _endDone.WaitOne();
+                        NotSubscribe = true;
+                    });
+                }
+                _consumerCnt++;
+            }
             var now = DateTime.Now;
             var msg = $"{now:yyyy-MM-dd HH:mm:ss} Offset:[{e.Offset}] Length:[{e.Value.Length}]\n{e.Key}\n{e.Value}\n\n";
             _messageLogs.Add(msg);

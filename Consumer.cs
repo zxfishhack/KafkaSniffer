@@ -140,9 +140,11 @@ namespace KafkaSniffer
                     consumer.Assign(par);
                 }
                 _messageLogs.Add($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} partitions assigned.\n\n");
+                OnPropertyChanged("MessageLog");
             };
             consumer.Subscribe(Topic);
             _messageLogs.Add($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} subscribe done.\n\n");
+            OnPropertyChanged("MessageLog");
             consumer.OnMessage += OnMessage;
             Task.Run(() =>
             {

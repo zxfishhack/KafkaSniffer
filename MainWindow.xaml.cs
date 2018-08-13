@@ -97,5 +97,12 @@ namespace KafkaSniffer
                 Vm.ConsumerList.RemoveAt(ConsumerList.SelectedIndex);
             }
         }
+
+        private void ModifyOffset(object sender, RoutedEventArgs e)
+        {
+            var wnd = new ModifyOffset(Vm.BrokerInfo.Endpoint);
+            wnd.Owner = this;
+            wnd.ShowDialog();
+        }
     }
 }

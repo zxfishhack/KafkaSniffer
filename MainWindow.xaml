@@ -25,6 +25,7 @@
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0" Content="Endpoint"/>
                 <TextBox Grid.Column="1" Width="240" Text="{Binding BrokerInfo.Endpoint}" IsEnabled="{Binding BrokerInfo.NotSetted}" />
+                <Button Grid.Column="2" Click="ModifyOffset">Modify Partition Offset</Button>
             </Grid>
         </GroupBox>
         <GroupBox Grid.Row="1" Header="Consumer List">
@@ -50,8 +51,6 @@
                                 <TextBox Text="{Binding Path=Topic, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Path=NotSubscribe}" />
                                 <Label>Group ID</Label>
                                 <TextBox Text="{Binding Path=GroupId}" IsEnabled="{Binding Path=NotSubscribe}" />
-                                <Label>Offset</Label>
-                                <TextBox Text="{Binding Path=Offset}" IsEnabled="{Binding Path=NotSubscribe}" />
                                 <Label>Count</Label>
                                 <TextBox Text="{Binding Path=Count}" IsEnabled="{Binding Path=NotSubscribe}" />
                             </StackPanel>

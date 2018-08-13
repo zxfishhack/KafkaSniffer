@@ -8,9 +8,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
 using Confluent.Kafka.Serialization;
+using System.Collections.ObjectModel;
 
 namespace KafkaSniffer
 {
+    internal class PartitionOffset
+    {
+        public int Partition { get; set; } = -1;
+        public int Offset { get; set; } = -1;
+    }
     internal class Consumer : BrokerInfo
     {
         private string _messageLog = "";
@@ -18,11 +24,11 @@ namespace KafkaSniffer
         private string _topic = "", _groupId = "";
         private bool _notSubscribe = true;
         private bool _end = false;
-        private int _offset = -1;
         private int _count = 0;
         private int _consumerCnt = 0;
         private readonly ManualResetEvent _endDone = new ManualResetEvent(false);
         private StreamWriter _logFile = null;
+        public ObservableCollection<PartitionOffset> Offsets = new ObservableCollection<PartitionOffset>();
 
         public string Topic
         {
@@ -41,16 +47,6 @@ namespace KafkaSniffer
             {
                 _groupId = value;
                 OnPropertyChanged("GroupId");
-            }
-        }
-
-        public int Offset
-        {
-            get { return _offset; }
-            set
-            {
-                _offset = value;
-                OnPropertyChanged("Offset");
             }
         }
 
@@ -125,19 +121,8 @@ namespace KafkaSniffer
                 );
             consumer.OnPartitionsAssigned += (obj, partitions) =>
             {
-                if (_offset < 0)
                 {
                     consumer.Assign(partitions);
-                }
-                else if (_offset == 0)
-                {
-                    var par = partitions.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.Beginning)).ToList();
-                    consumer.Assign(par);
-                }
-                else
-                {
-                    var par = partitions.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, _offset)).ToList();
-                    consumer.Assign(par);
                 }
                 _messageLogs.Add($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} partitions assigned.\n\n");
             };

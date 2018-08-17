@@ -5,11 +5,78 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KafkaSniffer"
         mc:Ignorable="d"
-        Title="ModifyOffset" Height="300" Width="300" WindowStartupLocation="CenterOwner">
+        Title="Modify Offset" Height="Auto" Width="500" SizeToContent="Height" WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Window.Resources>
+      <Style TargetType="Label">
+          <Setter Property="Width" Value="80" />
+          <Setter Property="HorizontalContentAlignment" Value="Right" />
+        </Style>
+      <Style TargetType="Grid">
+            <Setter Property="Margin" Value="0,5" />
+        </Style>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto"/>
-          <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>   
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <GroupBox Grid.Row="0" Header="Parameter">
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0">Endpoint:</Label>
+                    <TextBox Width="Auto" Grid.Column="1" Text="{Binding EndPoint}"/>
+                </Grid>
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0">Topic:</Label>
+                <TextBox Width="Auto" Grid.Column="1" Text="{Binding Topic}"/>
+              </Grid>
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0">Group ID:</Label>
+                  <TextBox Width="Auto" Grid.Column="1" Text="{Binding GroupId}"/>
+                </Grid>
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                  <Button Grid.Column="1" Click="Refresh_Click">Refresh</Button>
+                  <Button Grid.Column="2" Click="Apply_Click">Apply</Button>
+                </Grid>
+            </StackPanel>
+        </GroupBox>
+        <GroupBox Grid.Row="1" Header="Topic Partition Offset Setup">
+            <ItemsControl ItemsSource="{Binding TopicPartionList}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <StackPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                            <Label>Partition:</Label>
+                          <Label>
+                            <TextBlock Text="{Binding Partition}"/>
+                          </Label>
+                          <Label>Offset:</Label>
+                            <TextBox Text="{Binding Offset}" ToolTip="{Binding Tooltip}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </GroupBox>
     </Grid>
 </Window>

@@ -12,11 +12,6 @@ using System.Collections.ObjectModel;
 
 namespace KafkaSniffer
 {
-    internal class PartitionOffset
-    {
-        public int Partition { get; set; } = -1;
-        public int Offset { get; set; } = -1;
-    }
     internal class Consumer : BrokerInfo
     {
         private string _messageLog = "";
@@ -28,7 +23,6 @@ namespace KafkaSniffer
         private int _consumerCnt = 0;
         private readonly ManualResetEvent _endDone = new ManualResetEvent(false);
         private StreamWriter _logFile = null;
-        public ObservableCollection<PartitionOffset> Offsets = new ObservableCollection<PartitionOffset>();
 
         public string Topic
         {

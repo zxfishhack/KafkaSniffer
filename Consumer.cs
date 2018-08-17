@@ -24,6 +24,14 @@ namespace KafkaSniffer
         private readonly ManualResetEvent _endDone = new ManualResetEvent(false);
         private StreamWriter _logFile = null;
 
+        public string CurOffsetType { get; set; } = "Stored Offset";
+        public ObservableCollection<string> OffsetTypeList { get; } = new ObservableCollection<string> { "Beginning", "End", "Stored Offset" };
+
+        ~Consumer()
+        {
+            Close();
+        }
+
         public string Topic
         {
             get { return _topic; }
@@ -115,6 +123,17 @@ namespace KafkaSniffer
                 );
             consumer.OnPartitionsAssigned += (obj, partitions) =>
             {
+                if (CurOffsetType == "Beginning")
+                {
+                    var par = partitions.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.Beginning)).ToList();
+                    consumer.Assign(par);
+                }
+                else if (CurOffsetType == "End")
+                {
+                    var par = partitions.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.End)).ToList();
+                    consumer.Assign(par);
+                }
+                else
                 {
                     consumer.Assign(partitions);
                 }

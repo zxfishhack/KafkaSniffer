@@ -2,6 +2,7 @@
 using System.Text;
 using System.Windows;
 using Confluent.Kafka;
+using System;
 using Confluent.Kafka.Serialization;
 
 namespace KafkaSniffer
@@ -11,6 +12,11 @@ namespace KafkaSniffer
         private string _topic = "", _key = "";
         private bool _notInit = true;
         private Confluent.Kafka.Producer<string, string> _producer;
+
+        ~Producer()
+        {
+            Close();
+        }
 
         public string Topic
         {

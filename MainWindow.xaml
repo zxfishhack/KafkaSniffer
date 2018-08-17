@@ -51,6 +51,14 @@
                                 <TextBox Text="{Binding Path=Topic, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding Path=NotSubscribe}" />
                                 <Label>Group ID</Label>
                                 <TextBox Text="{Binding Path=GroupId}" IsEnabled="{Binding Path=NotSubscribe}" />
+                                <Label>Offset Type</Label>
+                                <ComboBox SelectedItem="{Binding Path=CurOffsetType}" IsEnabled="{Binding Path=NotSubscribe}" ItemsSource="{Binding Path=OffsetTypeList}">
+                                  <ComboBox.ItemTemplate>
+                                      <DataTemplate>
+                                          <TextBlock Text="{Binding}"/>
+                                      </DataTemplate>
+                                  </ComboBox.ItemTemplate>
+                                </ComboBox>
                                 <Label>Count</Label>
                                 <TextBox Text="{Binding Path=Count}" IsEnabled="{Binding Path=NotSubscribe}" />
                             </StackPanel>

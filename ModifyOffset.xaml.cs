@@ -32,35 +32,42 @@ namespace KafkaSniffer
             InitializeComponent();
         }
 
-        private void Refresh_Click(object sender, RoutedEventArgs e)
+        private void Refresh_Click(object sender, RoutedEventArgs _)
         {
-            var config = new Dictionary<string, object>
+            try
             {
-                {"group.id", dataContext.GroupId },
-                {"bootstrap.servers", dataContext.EndPoint },
-                {"enable.auto.commit",  "false"}
-            };
-
-            var consumer = new Consumer<string, string>(
-                config, new StringDeserializer(Encoding.UTF8), new StringDeserializer(Encoding.UTF8)
-                );
-            var topicPartition = new List<TopicPartition>();
-            var meta = consumer.GetMetadata(false, TimeSpan.FromSeconds(10));
-            var topicMeta = meta.Topics.Find(_ => _.Topic == dataContext.Topic);
-            foreach(var partition in topicMeta.Partitions)
-            {
-                topicPartition.Add(new TopicPartition(dataContext.Topic, partition.PartitionId));
-            }
-            var topicPartitionOffset = consumer.Committed(topicPartition, TimeSpan.FromSeconds(10));
-            dataContext.TopicPartionList.Clear();
-            foreach (var p in topicPartitionOffset)
-            {
-                dataContext.TopicPartionList.Add(new PartitionOffset
+                var config = new Dictionary<string, object>
                 {
-                    Partition = p.Partition,
-                    Offset = p.Offset.Value,
-                    Tooltip = p.Offset.ToString(),
-                });
+                    {"group.id", dataContext.GroupId },
+                    {"bootstrap.servers", dataContext.EndPoint },
+                    {"enable.auto.commit",  "false"}
+                };
+
+                var consumer = new Consumer<string, string>(
+                    config, new StringDeserializer(Encoding.UTF8), new StringDeserializer(Encoding.UTF8)
+                    );
+                var topicPartition = new List<TopicPartition>();
+                var meta = consumer.GetMetadata(false, TimeSpan.FromSeconds(10));
+                var topicMeta = meta.Topics.Find(i => i.Topic == dataContext.Topic);
+                foreach (var partition in topicMeta.Partitions)
+                {
+                    topicPartition.Add(new TopicPartition(dataContext.Topic, partition.PartitionId));
+                }
+                var topicPartitionOffset = consumer.Committed(topicPartition, TimeSpan.FromSeconds(10));
+                dataContext.TopicPartionList.Clear();
+                foreach (var p in topicPartitionOffset)
+                {
+                    dataContext.TopicPartionList.Add(new PartitionOffset
+                    {
+                        Partition = p.Partition,
+                        Offset = p.Offset.Value,
+                        Tooltip = p.Offset.ToString(),
+                    });
+                }
+            }
+            catch(Exception e)
+            {
+                MessageBox.Show($"Refresh Failed, Exception:{e.Message}");
             }
         }
 

@@ -23,6 +23,7 @@ namespace KafkaSniffer
         private int _consumerCnt = 0;
         private readonly ManualResetEvent _endDone = new ManualResetEvent(false);
         private StreamWriter _logFile = null;
+        private bool _firstAssigned = true;
 
         public string CurOffsetType { get; set; } = "Stored Offset";
         public ObservableCollection<string> OffsetTypeList { get; } = new ObservableCollection<string> { "Beginning", "End", "Stored Offset" };
@@ -123,22 +124,33 @@ namespace KafkaSniffer
                 );
             consumer.OnPartitionsAssigned += (obj, partitions) =>
             {
+                var parFiltered = partitions.Where(_ => _.Topic == Topic).ToList();
+                if (parFiltered.Count() <= 0)
+                {
+                    return;
+                }
+                if (!_firstAssigned)
+                {
+                    consumer.Assign(parFiltered);
+                    return;
+                }
                 if (CurOffsetType == "Beginning")
                 {
-                    var par = partitions.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.Beginning)).ToList();
+                    var par = parFiltered.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.Beginning)).ToList();
                     consumer.Assign(par);
                 }
                 else if (CurOffsetType == "End")
                 {
-                    var par = partitions.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.End)).ToList();
+                    var par = parFiltered.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.End)).ToList();
                     consumer.Assign(par);
                 }
                 else
                 {
-                    consumer.Assign(partitions);
+                    consumer.Assign(parFiltered);
                 }
                 _messageLogs.Add($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} partitions assigned.\n\n");
                 OnPropertyChanged("MessageLog");
+                _firstAssigned = false;
             };
             consumer.Subscribe(Topic);
             _messageLogs.Add($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} subscribe done.\n\n");

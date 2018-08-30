@@ -64,29 +64,36 @@ namespace KafkaSniffer
             }
         }
 
-        private async void Apply_Click(object sender, RoutedEventArgs e)
+        private async void Apply_Click(object sender, RoutedEventArgs _)
         {
-            var config = new Dictionary<string, object>
+            try
             {
-                {"group.id", dataContext.GroupId },
-                {"bootstrap.servers", dataContext.EndPoint },
-                {"enable.auto.commit",  "false"}
-            };
-
-            var consumer = new Consumer<string, string>(
-                config, new StringDeserializer(Encoding.UTF8), new StringDeserializer(Encoding.UTF8)
-                );
-            var topicPartitionOffset = new List<TopicPartitionOffset>();
-            foreach(var po in dataContext.TopicPartionList)
-            {
-                var offset = new Offset(po.Offset);
-                if (offset != Offset.Invalid)
+                var config = new Dictionary<string, object>
                 {
-                    topicPartitionOffset.Add(new TopicPartitionOffset(dataContext.Topic, po.Partition, offset));
+                    {"group.id", dataContext.GroupId },
+                    {"bootstrap.servers", dataContext.EndPoint },
+                    {"enable.auto.commit",  "false"}
+                };
+
+                var consumer = new Consumer<string, string>(
+                    config, new StringDeserializer(Encoding.UTF8), new StringDeserializer(Encoding.UTF8)
+                    );
+                var topicPartitionOffset = new List<TopicPartitionOffset>();
+                foreach (var po in dataContext.TopicPartionList)
+                {
+                    var offset = new Offset(po.Offset);
+                    if (offset != Offset.Invalid)
+                    {
+                        topicPartitionOffset.Add(new TopicPartitionOffset(dataContext.Topic, po.Partition, offset));
+                    }
                 }
+                var res = await consumer.CommitAsync(topicPartitionOffset);
+                MessageBox.Show($"Modify Result: {res.Error.ToString()}");
             }
-            var res = await consumer.CommitAsync(topicPartitionOffset);
-            MessageBox.Show($"Modify Result: {res.Error.ToString()}");
+            catch(Exception e)
+            {
+                MessageBox.Show($"Modify Failed, Exception:{e.Message}");
+            }
         }
     }
 

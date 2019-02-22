@@ -184,7 +184,7 @@ namespace KafkaSniffer
                 _consumerCnt++;
             }
             var now = DateTime.Now;
-            var msg = $"{now:yyyy-MM-dd HH:mm:ss} Offset:[{e.Offset}] Length:[{e.Value.Length}]\n{e.Key}\n{e.Value}\n\n";
+            var msg = $"{now:yyyy-MM-dd HH:mm:ss} Partition:[{e.Partition}] Offset:[{e.Offset}] Length:[{e.Value.Length}]\n{e.Key}\n{e.Value}\n\n";
             _messageLogs.Add(msg);
             _logFile?.Write(msg);
             if (_messageLogs.Count > 20)

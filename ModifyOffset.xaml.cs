@@ -14,7 +14,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Confluent.Kafka;
-using Confluent.Kafka.Serialization;
 
 namespace KafkaSniffer
 {
@@ -36,33 +35,43 @@ namespace KafkaSniffer
         {
             try
             {
-                var config = new Dictionary<string, object>
+                var config = new ConsumerConfig
                 {
-                    {"group.id", dataContext.GroupId },
-                    {"bootstrap.servers", dataContext.EndPoint },
-                    {"enable.auto.commit",  "false"}
+                    GroupId = dataContext.GroupId,
+                    BootstrapServers = dataContext.EndPoint,
+                    EnableAutoCommit = false,
+                    ApiVersionRequestTimeoutMs = 0,
+                    ApiVersionRequest = true,
                 };
-
-                var consumer = new Consumer<string, string>(
-                    config, new StringDeserializer(Encoding.UTF8), new StringDeserializer(Encoding.UTF8)
-                    );
-                var topicPartition = new List<TopicPartition>();
-                var meta = consumer.GetMetadata(false, TimeSpan.FromSeconds(10));
-                var topicMeta = meta.Topics.Find(i => i.Topic == dataContext.Topic);
-                foreach (var partition in topicMeta.Partitions)
+                var adminConfig = new AdminClientConfig
                 {
-                    topicPartition.Add(new TopicPartition(dataContext.Topic, partition.PartitionId));
-                }
-                var topicPartitionOffset = consumer.Committed(topicPartition, TimeSpan.FromSeconds(10));
-                dataContext.TopicPartionList.Clear();
-                foreach (var p in topicPartitionOffset)
+                    ApiVersionRequestTimeoutMs = 0,
+                    ApiVersionRequest = true,
+                    BootstrapServers = dataContext.EndPoint,
+                };
+                using (var admin = new AdminClientBuilder(config).Build())
                 {
-                    dataContext.TopicPartionList.Add(new PartitionOffset
+                    var meta = admin.GetMetadata(dataContext.Topic, TimeSpan.FromSeconds(10));
+                    using (var consumer = new ConsumerBuilder<string, string>(config).Build())
                     {
-                        Partition = p.Partition,
-                        Offset = p.Offset.Value,
-                        Tooltip = p.Offset.ToString(),
-                    });
+                        var topicPartition = new List<TopicPartition>();
+                        var topicMeta = meta.Topics.Find(i => i.Topic == dataContext.Topic);
+                        foreach (var partition in topicMeta.Partitions)
+                        {
+                            topicPartition.Add(new TopicPartition(dataContext.Topic, partition.PartitionId));
+                        }
+                        var topicPartitionOffset = consumer.Committed(topicPartition, TimeSpan.FromSeconds(10));
+                        dataContext.TopicPartionList.Clear();
+                        foreach (var p in topicPartitionOffset)
+                        {
+                            dataContext.TopicPartionList.Add(new PartitionOffset
+                            {
+                                Partition = p.Partition,
+                                Offset = p.Offset.Value,
+                                Tooltip = p.Offset.ToString(),
+                            });
+                        }
+                    }
                 }
             }
             catch(Exception e)
@@ -71,31 +80,29 @@ namespace KafkaSniffer
             }
         }
 
-        private async void Apply_Click(object sender, RoutedEventArgs _)
+        private void Apply_Click(object sender, RoutedEventArgs _)
         {
             try
             {
-                var config = new Dictionary<string, object>
+                var config = new ConsumerConfig
                 {
-                    {"group.id", dataContext.GroupId },
-                    {"bootstrap.servers", dataContext.EndPoint },
-                    {"enable.auto.commit",  "false"}
+                    GroupId = dataContext.GroupId,
+                    BootstrapServers = dataContext.EndPoint,
+                    EnableAutoCommit =  false,
                 };
 
-                var consumer = new Consumer<string, string>(
-                    config, new StringDeserializer(Encoding.UTF8), new StringDeserializer(Encoding.UTF8)
-                    );
+                var consumer = new ConsumerBuilder<string, string>(config).Build();
                 var topicPartitionOffset = new List<TopicPartitionOffset>();
                 foreach (var po in dataContext.TopicPartionList)
                 {
                     var offset = new Offset(po.Offset);
-                    if (offset != Offset.Invalid)
+                    if (offset != Offset.Unset)
                     {
                         topicPartitionOffset.Add(new TopicPartitionOffset(dataContext.Topic, po.Partition, offset));
                     }
                 }
-                var res = await consumer.CommitAsync(topicPartitionOffset);
-                MessageBox.Show($"Modify Result: {res.Error.ToString()}");
+                consumer.Commit(topicPartitionOffset);
+                MessageBox.Show($"Modify Result: success");
             }
             catch(Exception e)
             {

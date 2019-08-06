@@ -7,8 +7,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
-using Confluent.Kafka.Serialization;
 using System.Collections.ObjectModel;
+using System.Windows;
 
 namespace KafkaSniffer
 {
@@ -18,12 +18,12 @@ namespace KafkaSniffer
         private readonly List<string> _messageLogs = new List<string>();
         private string _topic = "", _groupId = "";
         private bool _notSubscribe = true;
-        private bool _end = false;
         private int _count = 0;
         private int _consumerCnt = 0;
-        private readonly ManualResetEvent _endDone = new ManualResetEvent(false);
         private StreamWriter _logFile = null;
         private bool _firstAssigned = true;
+        private Task _pollTask = null;
+        private CancellationTokenSource _cancelConsumer = null;
 
         public string CurOffsetType { get; set; } = "Stored Offset";
         public ObservableCollection<string> OffsetTypeList { get; } = new ObservableCollection<string> { "Beginning", "End", "Stored Offset" };
@@ -94,90 +94,102 @@ namespace KafkaSniffer
             MessageLog = "";
         }
 
-        public void Close()
+        public async void Close()
         {
-            if (_end)
+            _cancelConsumer.Cancel();
+            if (!NotSubscribe && _pollTask != null)
             {
-                return;
-            }
-            _end = true;
-            if (!NotSubscribe)
-            {
-                _endDone.WaitOne();
+                await _pollTask;
             }
         }
 
         public void SubScribe()
         {
+            _cancelConsumer = new CancellationTokenSource();
             _consumerCnt = 0;
-            _end = false;
-            _endDone.Reset();
             var brokerList = Endpoint;
-            var config = new Dictionary<string, object>
+            var config = new ConsumerConfig
             {
-                {"group.id", _groupId },
-                {"bootstrap.servers", brokerList }
+                BootstrapServers = brokerList,
+                GroupId = _groupId,
+                ApiVersionRequest = true,
+                EnableAutoCommit = true,
+                ApiVersionRequestTimeoutMs = 0,
             };
-
-            var consumer = new Consumer<string, string>(
-                config, new StringDeserializer(Encoding.UTF8), new StringDeserializer(Encoding.UTF8)
-                );
-            consumer.OnPartitionsAssigned += (obj, partitions) =>
+            var consumer = new ConsumerBuilder<string, string>(config)
+                .SetPartitionsAssignedHandler((c, partitions) =>
             {
                 var parFiltered = partitions.Where(_ => _.Topic == Topic).ToList();
-                if (parFiltered.Count() <= 0)
+                if (!parFiltered.Any())
                 {
                     return;
                 }
                 if (!_firstAssigned)
                 {
-                    consumer.Assign(parFiltered);
+                    c.Assign(parFiltered);
                     return;
                 }
                 if (CurOffsetType == "Beginning")
                 {
                     var par = parFiltered.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.Beginning)).ToList();
-                    consumer.Assign(par);
+                    c.Assign(par);
                 }
                 else if (CurOffsetType == "End")
                 {
                     var par = parFiltered.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.End)).ToList();
-                    consumer.Assign(par);
+                    c.Assign(par);
                 }
                 else
                 {
-                    consumer.Assign(parFiltered);
+                    c.Assign(parFiltered);
                 }
                 _messageLogs.Add($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} partitions assigned.\n\n");
                 OnPropertyChanged("MessageLog");
                 _firstAssigned = false;
-            };
+            }).Build();
             consumer.Subscribe(Topic);
             _messageLogs.Add($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} subscribe done.\n\n");
             OnPropertyChanged("MessageLog");
-            consumer.OnMessage += OnMessage;
-            Task.Run(() =>
+            _pollTask = Task.Run(() =>
             {
-                while (!_end)
+                try
                 {
-                    consumer.Poll(100);
+                    while (true)
+                    {
+                        try
+                        {
+                            var result = consumer.Consume(_cancelConsumer.Token);
+                            if (result.IsPartitionEOF)
+                            {
+                                continue;
+                            }
+                            OnMessage(result);
+                        }
+                        catch (ConsumeException e)
+                        {
+                            MessageBox.Show($"Consume error: {e.Error.Reason}");
+                        }
+
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    consumer.Close();
                 }
                 consumer.Dispose();
-                _endDone.Set();
             });
             NotSubscribe = false;
         }
 
-        private void OnMessage(object sender, Message<string, string> e)
+        private void OnMessage(ConsumeResult<string, string> e)
         {
             if (_count > 0)
             {
                 if (_consumerCnt == _count)
                 {
-                    _end = true;
+                    _cancelConsumer.Cancel();
                     Task.Run(() =>
                     {
-                        _endDone.WaitOne();
                         NotSubscribe = true;
                     });
                 }

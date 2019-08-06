@@ -3,7 +3,6 @@ using System.Text;
 using System.Windows;
 using Confluent.Kafka;
 using System;
-using Confluent.Kafka.Serialization;
 
 namespace KafkaSniffer
 {
@@ -11,7 +10,7 @@ namespace KafkaSniffer
     {
         private string _topic = "", _key = "";
         private bool _notInit = true;
-        private Confluent.Kafka.Producer<string, string> _producer;
+        private IProducer<string, string> _producer;
 
         ~Producer()
         {
@@ -57,12 +56,13 @@ namespace KafkaSniffer
                 return;
             }
             var brokerList = Endpoint;
-            var config = new Dictionary<string, object>
+            var config = new ProducerConfig
             {
-                { "bootstrap.servers", brokerList }
+                BootstrapServers = brokerList,
+                ApiVersionRequest = true,
+                ApiVersionRequestTimeoutMs = 0,
             };
-            _producer = new Confluent.Kafka.Producer<string, string>(config
-                , new StringSerializer(Encoding.UTF8), new StringSerializer(Encoding.UTF8));
+            _producer = new ProducerBuilder<string, string>(config).Build();
             NotInit = false;
         }
 
@@ -80,13 +80,20 @@ namespace KafkaSniffer
         {
             Init();
 
-            var result = await _producer.ProduceAsync(_topic
-                , _key
-                , Message
-            );
-            MessageBox.Show(result.Error
-                ? $"Send message to [{_topic}] fail. Error:[{result.Error.Reason}]"
-                : $"Send message to [{_topic}] succ.");
+            try
+            {
+                var result = await _producer.ProduceAsync(_topic
+                    , new Message<string, string>
+                    {
+                        Key = Key,
+                        Value = Message,
+                    });
+                MessageBox.Show($"Send message to [{_topic}] success.");
+            }
+            catch (ProduceException<string, string> e)
+            {
+                MessageBox.Show($"Send message to [{_topic}] fail. Error:[{e.Error.Reason}]");
+            }
         }
     }
 }

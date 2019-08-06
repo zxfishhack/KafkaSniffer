@@ -40,12 +40,10 @@ namespace KafkaSniffer
                     GroupId = dataContext.GroupId,
                     BootstrapServers = dataContext.EndPoint,
                     EnableAutoCommit = false,
-                    ApiVersionRequestTimeoutMs = 0,
                     ApiVersionRequest = true,
                 };
                 var adminConfig = new AdminClientConfig
                 {
-                    ApiVersionRequestTimeoutMs = 0,
                     ApiVersionRequest = true,
                     BootstrapServers = dataContext.EndPoint,
                 };

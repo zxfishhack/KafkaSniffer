@@ -60,7 +60,6 @@ namespace KafkaSniffer
             {
                 BootstrapServers = brokerList,
                 ApiVersionRequest = true,
-                ApiVersionRequestTimeoutMs = 0,
             };
             _producer = new ProducerBuilder<string, string>(config).Build();
             NotInit = false;

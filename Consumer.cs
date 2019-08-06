@@ -114,7 +114,6 @@ namespace KafkaSniffer
                 GroupId = _groupId,
                 ApiVersionRequest = true,
                 EnableAutoCommit = true,
-                ApiVersionRequestTimeoutMs = 0,
             };
             var consumer = new ConsumerBuilder<string, string>(config)
                 .SetPartitionsAssignedHandler((c, partitions) =>

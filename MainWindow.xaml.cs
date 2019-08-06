@@ -1,6 +1,8 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
+using NLog;
 
 namespace KafkaSniffer
 {
@@ -81,21 +83,38 @@ namespace KafkaSniffer
 
         private void CloseProducer(object sender, RoutedEventArgs e)
         {
-            if (MessageBox.Show("Confirm Close?", "Notice", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            try
             {
-                Vm.ProducerList[ProducerList.SelectedIndex].Close();
-                Vm.ProducerList.RemoveAt(ProducerList.SelectedIndex);
+                if (MessageBox.Show("Confirm Close?", "Notice", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    Vm.ProducerList[ProducerList.SelectedIndex].Close();
+                    Vm.ProducerList.RemoveAt(ProducerList.SelectedIndex);
+                }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                LogManager.GetCurrentClassLogger().Error(ex);
+            }
+
         }
 
         private void CloseConsumer(object sender, RoutedEventArgs e)
         {
-
-            if (MessageBox.Show("Confirm Close?", "Notice", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            try
             {
-                Vm.ConsumerList[ConsumerList.SelectedIndex].Close();
-                Vm.ConsumerList.RemoveAt(ConsumerList.SelectedIndex);
+                if (MessageBox.Show("Confirm Close?", "Notice", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+                {
+                    Vm.ConsumerList[ConsumerList.SelectedIndex].Close();
+                    Vm.ConsumerList.RemoveAt(ConsumerList.SelectedIndex);
+                }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                LogManager.GetCurrentClassLogger().Error(ex);
+            }
+
         }
 
         private void ModifyOffset(object sender, RoutedEventArgs e)

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using System.Collections.ObjectModel;
 using System.Windows;
+using NLog;
 
 namespace KafkaSniffer
 {
@@ -24,6 +25,8 @@ namespace KafkaSniffer
         private bool _firstAssigned = true;
         private Task _pollTask = null;
         private CancellationTokenSource _cancelConsumer = null;
+
+        private static Logger Logger = LogManager.GetLogger("consumer");
 
         public string CurOffsetType { get; set; } = "Stored Offset";
         public ObservableCollection<string> OffsetTypeList { get; } = new ObservableCollection<string> { "Beginning", "End", "Stored Offset" };
@@ -115,40 +118,54 @@ namespace KafkaSniffer
                 ApiVersionRequest = true,
                 EnableAutoCommit = true,
             };
-            var consumer = new ConsumerBuilder<string, string>(config)
-                .SetPartitionsAssignedHandler((c, partitions) =>
+            if (Debug)
             {
-                var parFiltered = partitions.Where(_ => _.Topic == Topic).ToList();
-                if (!parFiltered.Any())
+                config.Debug = "msg,broker,topic,protocol";
+            }
+            var consumer = new ConsumerBuilder<string, string>(config)
+                .SetLogHandler((_, msg) =>
                 {
-                    return;
-                }
-                if (!_firstAssigned)
+                    Logger.Log(MapLogLevel(msg.Level), msg.Message);
+                })
+                .SetPartitionsAssignedHandler((c, partitions) =>
                 {
-                    c.Assign(parFiltered);
-                    return;
-                }
-                if (CurOffsetType == "Beginning")
-                {
-                    var par = parFiltered.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.Beginning)).ToList();
-                    c.Assign(par);
-                }
-                else if (CurOffsetType == "End")
-                {
-                    var par = parFiltered.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.End)).ToList();
-                    c.Assign(par);
-                }
-                else
-                {
-                    c.Assign(parFiltered);
-                }
-                _messageLogs.Add($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} partitions assigned.\n\n");
-                OnPropertyChanged("MessageLog");
-                _firstAssigned = false;
-            }).Build();
+                    var parFiltered = partitions.Where(_ => _.Topic == Topic).ToList();
+                    var ret = new List<TopicPartitionOffset>();
+                    if (!parFiltered.Any())
+                    {
+                        _messageLogs.Add($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} WARNING!!! empty partition filtered?\n\n");
+                    }
+                    else if (!_firstAssigned)
+                    {
+                        ret = parFiltered.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.Unset)).ToList();
+                    }
+                    else if (CurOffsetType == "Beginning")
+                    {
+                        ret = parFiltered.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.Beginning)).ToList(); ;
+                    }
+                    else if (CurOffsetType == "End")
+                    {
+                        ret = parFiltered.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.End)).ToList(); ;
+                    }
+                    else
+                    {
+                        ret = parFiltered.Select(p => new TopicPartitionOffset(p.Topic, p.Partition, Confluent.Kafka.Offset.Unset)).ToList();
+                    }
+
+                    var assignedInfo = "";
+                    ret.ForEach(offset =>
+                        {
+                            assignedInfo +=
+                                $"(Topic: {offset.Topic}, Partition: {offset.Partition}, Offset: {offset.Offset})";
+                        });
+                    _messageLogs.Add($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} partitions assigned. [{assignedInfo}]\n\n");
+                    RefreshMessageLog();
+                    _firstAssigned = false;
+                    return ret;
+                }).Build();
             consumer.Subscribe(Topic);
             _messageLogs.Add($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} subscribe done.\n\n");
-            OnPropertyChanged("MessageLog");
+            RefreshMessageLog();
             _pollTask = Task.Run(() =>
             {
                 try
@@ -202,6 +219,11 @@ namespace KafkaSniffer
             {
                 _messageLogs.RemoveAt(0);
             }
+            RefreshMessageLog();
+        }
+
+        private void RefreshMessageLog()
+        {
             _messageLog = "";
             _messageLogs.ForEach(log =>
             {

@@ -3,6 +3,8 @@ using System.Text;
 using System.Windows;
 using Confluent.Kafka;
 using System;
+using NLog;
+using NLog.Fluent;
 
 namespace KafkaSniffer
 {
@@ -11,6 +13,7 @@ namespace KafkaSniffer
         private string _topic = "", _key = "";
         private bool _notInit = true;
         private IProducer<string, string> _producer;
+        private static Logger Logger = LogManager.GetLogger("producer");
 
         ~Producer()
         {
@@ -61,7 +64,14 @@ namespace KafkaSniffer
                 BootstrapServers = brokerList,
                 ApiVersionRequest = true,
             };
-            _producer = new ProducerBuilder<string, string>(config).Build();
+            if (Debug)
+            {
+                config.Debug = "msg,broker,topic,protocol";
+            }
+            _producer = new ProducerBuilder<string, string>(config).SetLogHandler((_, msg) =>
+            {
+                Logger.Log(MapLogLevel(msg.Level), msg.Message);
+            }).Build();
             NotInit = false;
         }
 

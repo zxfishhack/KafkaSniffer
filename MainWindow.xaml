@@ -16,17 +16,12 @@
             <RowDefinition Height="240" />
         </Grid.RowDefinitions>
         <GroupBox Grid.Row="0" Header="Default Broker">
-            <Grid VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="240" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Content="Endpoint"/>
-                <TextBox Grid.Column="1" Width="240" Text="{Binding BrokerInfo.Endpoint}" IsEnabled="{Binding BrokerInfo.NotSetted}" />
-                <Button Grid.Column="2" Click="ModifyOffset">Modify Partition Offset</Button>
-            </Grid>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Endpoint"/>
+                <TextBox Width="240" Text="{Binding BrokerInfo.Endpoint}" IsEnabled="{Binding BrokerInfo.NotSetted}" />
+                <Button Click="ModifyOffset">Modify Partition Offset</Button>
+                <CheckBox IsChecked="{Binding BrokerInfo.Debug}">Debug</CheckBox>
+            </StackPanel>
         </GroupBox>
         <GroupBox Grid.Row="1" Header="Consumer List">
             <TabControl ItemsSource="{Binding ConsumerList, Mode=OneWay}" Name="ConsumerList">

@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Confluent.Kafka;
+using NLog;
 
 namespace KafkaSniffer
 {
@@ -23,6 +24,7 @@ namespace KafkaSniffer
     public partial class ModifyOffset : Window
     {
         private ModifyOffsetModel dataContext = new ModifyOffsetModel();
+        private Logger _logger = LogManager.GetLogger("rdkafka");
 
         public ModifyOffset(string endpoint)
         {
@@ -41,16 +43,18 @@ namespace KafkaSniffer
                     BootstrapServers = dataContext.EndPoint,
                     EnableAutoCommit = false,
                     ApiVersionRequest = true,
+                    Debug = "msg,broker,topic,protocol",
                 };
                 var adminConfig = new AdminClientConfig
                 {
                     ApiVersionRequest = true,
                     BootstrapServers = dataContext.EndPoint,
+                    Debug = "msg,broker,topic,protocol",
                 };
-                using (var admin = new AdminClientBuilder(config).Build())
+                using (var admin = new AdminClientBuilder(config).SetLogHandler((c, msg) => { _logger.Log(BrokerInfo.MapLogLevel(msg.Level), msg.Message); }).Build())
                 {
                     var meta = admin.GetMetadata(dataContext.Topic, TimeSpan.FromSeconds(10));
-                    using (var consumer = new ConsumerBuilder<string, string>(config).Build())
+                    using (var consumer = new ConsumerBuilder<string, string>(config).SetLogHandler((c, msg) => {_logger.Log(BrokerInfo.MapLogLevel(msg.Level), msg.Message);}).Build())
                     {
                         var topicPartition = new List<TopicPartition>();
                         var topicMeta = meta.Topics.Find(i => i.Topic == dataContext.Topic);

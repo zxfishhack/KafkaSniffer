@@ -99,7 +99,7 @@ namespace KafkaSniffer
 
         public async void Close()
         {
-            _cancelConsumer.Cancel();
+            _cancelConsumer?.Cancel();
             if (!NotSubscribe && _pollTask != null)
             {
                 await _pollTask;
